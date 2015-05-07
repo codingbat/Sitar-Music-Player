@@ -29,56 +29,56 @@ import android.widget.MediaController.MediaPlayerControl;
 
 public class MainActivity extends Activity implements MediaPlayerControl {
 
-	//song list variables
+	// song list variables
 	private ArrayList<Song> songList;
 	private ListView songView;
 
-	//service
+	// service
 	private MusicService musicSrv;
 	private Intent playIntent;
-	//binding
-	private boolean musicBound=false;
+	// binding
+	private boolean musicBound = false;
 
-	//controller
+	// controller
 	private MusicController controller;
 
-	//activity and playback pause flags
-	private boolean paused=false, playbackPaused=false;
+	// activity and playback pause flags
+	private boolean paused = false, playbackPaused = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		//retrieve list view
-		songView = (ListView)findViewById(R.id.song_list);
-		//instantiate list
+		// retrieve list view
+		songView = (ListView) findViewById(R.id.song_list);
+		// instantiate list
 		songList = new ArrayList<Song>();
-		//get songs from device
+		// get songs from device
 		getSongList();
-		//sort alphabetically by title
-		Collections.sort(songList, new Comparator<Song>(){
-			public int compare(Song a, Song b){
+		// sort alphabetically by title
+		Collections.sort(songList, new Comparator<Song>() {
+			public int compare(Song a, Song b) {
 				return a.getTitle().compareTo(b.getTitle());
 			}
 		});
-		//create and set adapter
+		// create and set adapter
 		SongAdapter songAdt = new SongAdapter(this, songList);
 		songView.setAdapter(songAdt);
 
-		//setup controller
+		// setup controller
 		setController();
 	}
 
-	//connect to the service
-	private ServiceConnection musicConnection = new ServiceConnection(){
+	// connect to the service
+	private ServiceConnection musicConnection = new ServiceConnection() {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			MusicBinder binder = (MusicBinder)service;
-			//get service
+			MusicBinder binder = (MusicBinder) service;
+			// get service
 			musicSrv = binder.getService();
-			//pass list
+			// pass list
 			musicSrv.setList(songList);
 			musicBound = true;
 		}
@@ -89,24 +89,24 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 		}
 	};
 
-	//start and bind the service when the activity starts
+	// start and bind the service when the activity starts
 	@Override
 	protected void onStart() {
 		super.onStart();
-		if(playIntent==null){
+		if (playIntent == null) {
 			playIntent = new Intent(this, MusicService.class);
 			bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
 			startService(playIntent);
 		}
 	}
 
-	//user song select
-	public void songPicked(View view){
+	// user song select
+	public void songPicked(View view) {
 		musicSrv.setSong(Integer.parseInt(view.getTag().toString()));
 		musicSrv.playSong();
-		if(playbackPaused){
+		if (playbackPaused) {
 			setController();
-			playbackPaused=false;
+			playbackPaused = false;
 		}
 		controller.show(0);
 	}
@@ -120,43 +120,43 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		//menu item selected
+		// menu item selected
 		switch (item.getItemId()) {
 		case R.id.action_shuffle:
 			musicSrv.setShuffle();
 			break;
 		case R.id.action_end:
 			stopService(playIntent);
-			musicSrv=null;
+			musicSrv = null;
 			System.exit(0);
 			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
-	//method to retrieve song info from device
-	public void getSongList(){
-		//query external audio
+	// method to retrieve song info from device
+	public void getSongList() {
+		// query external audio
 		ContentResolver musicResolver = getContentResolver();
 		Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-		Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-		//iterate over results if valid
-		if(musicCursor!=null && musicCursor.moveToFirst()){
-			//get columns
-			int titleColumn = musicCursor.getColumnIndex
-					(android.provider.MediaStore.Audio.Media.TITLE);
-			int idColumn = musicCursor.getColumnIndex
-					(android.provider.MediaStore.Audio.Media._ID);
-			int artistColumn = musicCursor.getColumnIndex
-					(android.provider.MediaStore.Audio.Media.ARTIST);
-			//add songs to list
+		Cursor musicCursor = musicResolver.query(musicUri, null, null, null,
+				null);
+		// iterate over results if valid
+		if (musicCursor != null && musicCursor.moveToFirst()) {
+			// get columns
+			int titleColumn = musicCursor
+					.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE);
+			int idColumn = musicCursor
+					.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+			int artistColumn = musicCursor
+					.getColumnIndex(android.provider.MediaStore.Audio.Media.ARTIST);
+			// add songs to list
 			do {
 				long thisId = musicCursor.getLong(idColumn);
 				String thisTitle = musicCursor.getString(titleColumn);
 				String thisArtist = musicCursor.getString(artistColumn);
 				songList.add(new Song(thisId, thisTitle, thisArtist));
-			} 
-			while (musicCursor.moveToNext());
+			} while (musicCursor.moveToNext());
 		}
 	}
 
@@ -187,28 +187,30 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 
 	@Override
 	public int getCurrentPosition() {
-		if(musicSrv!=null && musicBound && musicSrv.isPng())
+		if (musicSrv != null && musicBound && musicSrv.isPng())
 			return musicSrv.getPosn();
-		else return 0;
+		else
+			return 0;
 	}
 
 	@Override
 	public int getDuration() {
-		if(musicSrv!=null && musicBound && musicSrv.isPng())
+		if (musicSrv != null && musicBound && musicSrv.isPng())
 			return musicSrv.getDur();
-		else return 0;
+		else
+			return 0;
 	}
 
 	@Override
 	public boolean isPlaying() {
-		if(musicSrv!=null && musicBound)
+		if (musicSrv != null && musicBound)
 			return musicSrv.isPng();
 		return false;
 	}
 
 	@Override
 	public void pause() {
-		playbackPaused=true;
+		playbackPaused = true;
 		musicSrv.pausePlayer();
 	}
 
@@ -222,10 +224,10 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 		musicSrv.go();
 	}
 
-	//set the controller up
-	private void setController(){
+	// set the controller up
+	private void setController() {
 		controller = new MusicController(this);
-		//set previous and next button listeners
+		// set previous and next button listeners
 		controller.setPrevNextListeners(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -237,42 +239,42 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 				playPrev();
 			}
 		});
-		//set and show
+		// set and show
 		controller.setMediaPlayer(this);
 		controller.setAnchorView(findViewById(R.id.song_list));
 		controller.setEnabled(true);
 	}
 
-	private void playNext(){
+	private void playNext() {
 		musicSrv.playNext();
-		if(playbackPaused){ 
+		if (playbackPaused) {
 			setController();
-			playbackPaused=false;
+			playbackPaused = false;
 		}
 		controller.show(0);
 	}
 
-	private void playPrev(){
+	private void playPrev() {
 		musicSrv.playPrev();
-		if(playbackPaused){
+		if (playbackPaused) {
 			setController();
-			playbackPaused=false;
+			playbackPaused = false;
 		}
 		controller.show(0);
 	}
 
 	@Override
-	protected void onPause(){
+	protected void onPause() {
 		super.onPause();
-		paused=true;
+		paused = true;
 	}
 
 	@Override
-	protected void onResume(){
+	protected void onResume() {
 		super.onResume();
-		if(paused){
+		if (paused) {
 			setController();
-			paused=false;
+			paused = false;
 		}
 	}
 
@@ -285,7 +287,7 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 	@Override
 	protected void onDestroy() {
 		stopService(playIntent);
-		musicSrv=null;
+		musicSrv = null;
 		super.onDestroy();
 	}
 
