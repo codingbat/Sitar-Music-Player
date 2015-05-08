@@ -44,6 +44,7 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 
 	// activity and playback pause flags
 	private boolean paused = false, playbackPaused = false;
+	private boolean playerVisible = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +108,7 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 		if (playbackPaused) {
 			setController();
 			playbackPaused = false;
+			playerVisible = true;
 		}
 		controller.show(0);
 	}
@@ -226,23 +228,25 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 
 	// set the controller up
 	private void setController() {
-		controller = new MusicController(this);
-		// set previous and next button listeners
-		controller.setPrevNextListeners(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				playNext();
-			}
-		}, new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				playPrev();
-			}
-		});
-		// set and show
-		controller.setMediaPlayer(this);
-		controller.setAnchorView(findViewById(R.id.song_list));
-		controller.setEnabled(true);
+		if (!playerVisible) {
+			controller = new MusicController(this);
+			// set previous and next button listeners
+			controller.setPrevNextListeners(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					playNext();
+				}
+			}, new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					playPrev();
+				}
+			});
+			// set and show
+			controller.setMediaPlayer(this);
+			controller.setAnchorView(findViewById(R.id.song_list));
+			controller.setEnabled(true);
+		}
 	}
 
 	private void playNext() {
