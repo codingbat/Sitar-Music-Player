@@ -235,11 +235,13 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 				@Override
 				public void onClick(View v) {
 					playNext();
+					//start();
 				}
 			}, new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					playPrev();
+					//start();
 				}
 			});
 			// set and show
