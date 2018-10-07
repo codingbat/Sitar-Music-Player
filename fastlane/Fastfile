@@ -1,0 +1,37 @@
+# More documentation about how to customize your build
+# can be found here:
+# https://docs.fastlane.tools
+fastlane_version "2.68.0"
+
+# This value helps us track success metrics for Fastfiles
+# we automatically generate. Feel free to remove this line
+# once you get things running smoothly!
+generated_fastfile_id "c5eb78ac-805f-45eb-a0ee-a7785b33e3ed"
+
+default_platform :android
+
+# Fastfile actions accept additional configuration, but
+# don't worry, fastlane will prompt you for required
+# info which you can add here later
+lane :beta do
+  # build the release variant
+  build_android_app(task: "assembleRelease")
+
+  # upload to Google Play
+  supply(track: "beta")
+
+  # slack(
+  #   slack_url: "https://hooks.slack.com/services/IDS"
+  # )
+
+  # hipchat(
+  #   api_token: "YOUR_API_TOKEN",
+  #   version: 2,
+  #   channel: "Room Name"
+  # )
+
+  # ifttt(
+  #   event_name: "event",
+  #   api_key: "YOUR_API_KEY"
+  # )
+end
